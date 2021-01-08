@@ -1,23 +1,53 @@
-import logo from './logo.svg';
-import './App.css';
+import "./App.css";
+import Header from "./Header";
+import Countries from "./Countries";
+import { useEffect, useState } from "react";
 
 function App() {
+  const [countries, setCountries] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [region, setRegion] = useState("");
+  const [search, setSearch] = useState("");
+
+  const handleSearch = (e) => {
+    setSearch(e.target.value);
+  };
+
+  const handleRegion = (e) => {
+    setRegion(e.target.value);
+  };
+
+  const fetchCountries = async () => {
+    try {
+      setLoading(true);
+      const response = await fetch(`https://restcountries.eu/rest/v2/all`);
+      const newCountries = await response.json();
+      setLoading(false);
+      setCountries(newCountries);
+    } catch (error) {
+      alert(error);
+    }
+  };
+
+  const filteredCountries = countries.filter(
+    (country) =>
+      country.name.toLowerCase().includes(search.toLowerCase()) &&
+      (region.toLowerCase() === "all"
+        ? countries
+        : country.region.toLowerCase().includes(region.toLocaleLowerCase()))
+  );
+
+  useEffect(() => fetchCountries(), []);
   return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
+    <div className="app">
+      <Header />
+      <Countries
+        countries={countries}
+        loading={loading}
+        handleSearch={handleSearch}
+        handleRegion={handleRegion}
+        filteredCountries={filteredCountries}
+      />
     </div>
   );
 }
